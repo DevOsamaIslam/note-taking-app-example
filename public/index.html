@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <h1>Note taking app</h1>
+  <hr>
+
+  <h3>Add a new note</h3>
+
+  <form id="add-note">
+    <label>Note:</label>
+    <input type="text" name="note">
+  </form>
+
+  <script>
+    let addNoteForm = document.querySelector('form#add-note')
+    addNoteForm.addEventListener('submit', e => {
+      e.preventDefault()
+      fetch('/api', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          note: e.target.note.value
+        })
+      })
+      e.target.note.value = ''
+      fetchNotes()
+    })
+  </script>
+
+
+  <h3>Update note:</h3>
+
+  <form id="update-note">
+    <input type="text" placeholder="Note ID" name="noteId">
+    <input type="text" placeholder="New text" name="note">
+    <input type="submit" value="Update">
+  </form>
+
+  <script>
+    let updateForm = document.querySelector('form#update-note')
+    updateForm.addEventListener('submit', e => {
+      e.preventDefault()
+      fetch(`/api?id=${e.target.noteId.value}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            note: e.target.note.value
+          })
+        })
+        .then(res => res.json())
+        .then(data => fetchNotes())
+    })
+  </script>
+
+  <h3>Delete note:</h3>
+
+  <form id="delete-note">
+    <input type="text" placeholder="Note ID" name="noteId">
+    <input type="submit" value="Delete">
+  </form>
+
+  <script>
+    // Delete note 
+    let deleteNote = document.querySelector('form#delete-note')
+    deleteNote.addEventListener('submit', e => {
+      e.preventDefault()
+      fetch(`/api?id=${e.target.noteId.value}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
+        .then(res => res.json())
+        .then(data => fetchNotes())
+
+      e.target.noteId.value = ''
+    })
+  </script>
+
+  <h3>Notes:</h3>
+  <table border="1">
+    <thead>
+      <th>#</th>
+      <th>Note</th>
+      <th>Date</th>
+    </thead>
+
+    <tbody id="notes-list">
+
+    </tbody>
+  </table>
+
+  <script>
+    const fetchNotes = () => {
+      let notesTable = document.querySelector('#notes-list')
+      notesTable.innerHTML = ''
+      fetch('/api')
+        .then(resp => resp.json())
+        .then(data => {
+          for (note of data) {
+            let tr = document.createElement('tr')
+
+            let td1 = document.createElement('td')
+            td1.innerText = note._id
+
+            let td2 = document.createElement('td')
+            td2.innerText = note.note
+
+            let td3 = document.createElement('td')
+            td3.innerText = note.date
+
+            tr.appendChild(td1)
+            tr.appendChild(td2)
+            tr.appendChild(td3)
+
+            notesTable.appendChild(tr)
+
+
+          }
+        })
+    }
+    fetchNotes()
+  </script>
+
+
+
+
+
+
+</body>
+
+
+
+</html>
